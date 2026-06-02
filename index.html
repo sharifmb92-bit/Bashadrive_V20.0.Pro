@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
-    <title>BashaDrive Pro</title>
+    <title>BashaDrive Pro V5</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,101 +17,101 @@
         body { 
             background-color: #000000; 
             color: #ffffff; 
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
             padding-top: env(safe-area-inset-top);
         }
         .card-dia {
-            background: linear-gradient(145deg, #111827, #0f172a);
+            background: linear-gradient(145deg, #111827, #0a0f1a);
             border-radius: 1.5rem;
-            margin-bottom: 1rem;
-            padding: 1.25rem;
-            border-left: 10px solid #374151;
+            margin-bottom: 1.25rem;
+            padding: 1.5rem;
+            border-left: 12px solid #374151;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
         }
         .border-expres { border-left-color: #0ea5e9; }  
         .border-escolar { border-left-color: #10b981; } 
         .border-tarde { border-left-color: #f59e0b; }   
-        .border-libre { border-left-color: #4b5563; opacity: 0.6; }
+        .border-libre { border-left-color: #4b5563; opacity: 0.8; }
 
         .bus-badge {
             background: #f97316;
             color: #000000;
-            padding: 0.4rem 0.8rem;
-            border-radius: 0.75rem;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
             font-weight: 900;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             line-height: 1;
         }
-        .input-manual {
+        .input-basha {
             background: #1f2937;
             border: 2px solid #374151;
-            border-radius: 0.75rem;
-            padding: 0.75rem;
+            border-radius: 1rem;
+            padding: 1rem;
             color: white;
-            width: 100%;
             font-size: 1.1rem;
+            width: 100%;
         }
     </style>
 </head>
 <body x-data="bashaApp()" x-init="init()">
 
-    <!-- Header con botón Borrar (X) e Importar -->
-    <header class="p-4 sticky top-0 bg-black/90 backdrop-blur-md z-50 flex justify-between items-center border-b border-white/10">
+    <header class="p-5 sticky top-0 bg-black/90 backdrop-blur-md z-50 flex justify-between items-center border-b border-white/10">
         <div>
-            <h1 class="text-lg font-black text-orange-500 italic">BASHADRIVE PRO</h1>
-            <p class="text-[10px] font-bold text-sky-400 uppercase tracking-widest">Cód. 86 • Menorca</p>
+            <h1 class="text-xl font-black text-orange-500 italic">BASHADRIVE <span class="text-white">PRO</span></h1>
+            <p class="text-[10px] font-bold text-sky-400 tracking-widest uppercase">Menorca • Gestión de Turnos</p>
         </div>
-        <div class="flex gap-2">
-            <!-- Botón Limpiar Pantalla (X) -->
-            <button @click="borrarTodo()" class="bg-red-600/20 text-red-500 w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition">
-                <span class="material-symbols-outlined">delete_sweep</span>
+        <div class="flex gap-3">
+            <button @click="borrarTodo()" class="text-red-500 bg-red-500/10 p-2 rounded-full">
+                <span class="material-symbols-outlined">delete</span>
             </button>
-            <!-- Botón Añadir/Pegar -->
-            <button @click="ui.showImport = true" class="bg-orange-600 w-10 h-10 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition">
-                <span class="material-symbols-outlined text-white">add_task</span>
+            <button @click="ui.showImport = true" class="bg-orange-600 p-2 rounded-xl text-white shadow-lg shadow-orange-900/40">
+                <span class="material-symbols-outlined text-3xl">add_box</span>
             </button>
         </div>
     </header>
 
-    <main class="p-4 pb-20">
-        <!-- Mensaje si está vacío -->
+    <main class="p-4 pb-24">
         <template x-if="planning.length === 0">
-            <div class="flex flex-col items-center justify-center py-20 text-center">
-                <span class="material-symbols-outlined text-6xl text-gray-700 mb-4">calendar_view_day</span>
-                <p class="text-gray-500 font-bold uppercase text-xs tracking-widest">Pantalla Limpia</p>
-                <button @click="crearSemanaVacia()" class="mt-4 text-orange-500 font-black text-sm underline">O CREAR SEMANA MANUALMENTE</button>
+            <div class="text-center py-20 opacity-30 border-2 border-dashed border-white/20 rounded-[2rem]">
+                <span class="material-symbols-outlined text-6xl mb-4 text-orange-500">content_paste_go</span>
+                <p class="font-black uppercase text-sm">Pega el cuadrante para empezar</p>
             </div>
         </template>
 
-        <!-- Listado de Días -->
         <template x-for="(dia, index) in planning" :key="index">
             <div class="card-dia" :class="getEstiloDia(dia)">
-                <div class="flex justify-between items-start mb-3">
+                
+                <div class="flex justify-between items-start mb-4">
                     <div>
-                        <h3 class="text-orange-500 font-black uppercase text-xs" x-text="dia.diaSemana"></h3>
-                        <p class="text-gray-400 font-bold text-sm" x-text="dia.fecha"></p>
+                        <h3 class="text-orange-500 font-black uppercase text-sm tracking-tighter" x-text="dia.diaSemana"></h3>
+                        <!-- Fecha resaltada -->
+                        <p class="text-white font-bold text-lg bg-white/5 px-2 py-0.5 rounded" x-text="dia.fecha"></p>
                     </div>
-                    <!-- Botón Lápiz para escribir a mano -->
-                    <button @click="abrirEditor(index)" class="bg-white/5 p-2 rounded-lg text-gray-400 active:text-orange-500">
-                        <span class="material-symbols-outlined">edit_note</span>
+                    <button @click="abrirEditor(index)" class="bg-white/10 p-3 rounded-2xl text-gray-300">
+                        <span class="material-symbols-outlined">edit</span>
                     </button>
                 </div>
 
-                <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center justify-between gap-4">
                     <div class="flex-1">
-                        <h2 class="text-xl font-black text-white uppercase leading-tight" x-text="dia.servicio"></h2>
-                        <div class="flex gap-4 mt-2">
-                            <div class="flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sky-400 text-sm">login</span>
-                                <span class="font-bold text-base" x-text="dia.entrada || '--:--'"></span>
+                        <p class="text-[10px] uppercase font-black text-gray-500 mb-1 tracking-widest">Servicio</p>
+                        <h2 class="text-2xl font-black text-white leading-none uppercase" x-text="dia.servicio"></h2>
+                        
+                        <div class="flex gap-6 mt-4">
+                            <div class="flex flex-col">
+                                <span class="text-[9px] uppercase font-bold text-sky-500">Entrada</span>
+                                <span class="text-xl font-black" x-text="dia.entrada || '--:--'"></span>
                             </div>
-                            <div class="flex items-center gap-1">
-                                <span class="material-symbols-outlined text-orange-400 text-sm">logout</span>
-                                <span class="font-bold text-base" x-text="dia.salida || '--:--'"></span>
+                            <div class="flex flex-col">
+                                <span class="text-[9px] uppercase font-bold text-orange-500">Salida</span>
+                                <span class="text-xl font-black" x-text="dia.salida || '--:--'"></span>
                             </div>
                         </div>
                     </div>
+                    
                     <template x-if="dia.bus">
                         <div class="text-center">
+                            <p class="text-[9px] uppercase font-black text-gray-500 mb-1">Bus</p>
                             <span class="bus-badge" x-text="dia.bus"></span>
                         </div>
                     </template>
@@ -120,49 +120,55 @@
         </template>
     </main>
 
-    <!-- Pantalla Importar (Pegar) -->
+    <!-- Modal Pegar Cuadrante -->
     <div x-show="ui.showImport" x-cloak class="fixed inset-0 bg-black z-[100] p-6 flex flex-col">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-black text-orange-500 uppercase">Pegar Cuadrante</h2>
-            <button @click="ui.showImport = false" class="text-white"><span class="material-symbols-outlined">close</span></button>
+            <h2 class="text-2xl font-black text-orange-500 uppercase italic">Importar Email</h2>
+            <button @click="ui.showImport = false" class="bg-white/10 p-2 rounded-full text-white"><span class="material-symbols-outlined">close</span></button>
         </div>
-        <textarea x-model="inputRaw" class="flex-grow bg-gray-900 border-2 border-white/10 rounded-2xl p-4 text-sky-400 font-mono text-base outline-none" placeholder="Pega aquí el mail..."></textarea>
-        <button @click="procesarMail(inputRaw)" class="mt-4 bg-orange-600 text-white py-5 rounded-2xl font-black text-lg uppercase shadow-lg">
-            GENERAR CUADRANTE
+        <textarea x-model="inputRaw" class="flex-grow bg-gray-900 border-2 border-white/10 rounded-3xl p-5 text-sky-400 font-mono text-lg outline-none" placeholder="Copia y pega aquí todo el texto del mail..."></textarea>
+        <button @click="procesarSuperInteligente(inputRaw)" class="mt-4 bg-orange-600 text-white py-6 rounded-3xl font-black text-xl uppercase shadow-2xl active:scale-95 transition-all">
+            ACTUALIZAR CUADRANTE
         </button>
     </div>
 
-    <!-- Pantalla Editar (Escribir a mano) -->
-    <div x-show="ui.showEdit" x-cloak class="fixed inset-0 bg-black/95 z-[110] p-6 flex items-center justify-center">
-        <div class="bg-gray-900 border border-white/20 rounded-[2rem] p-6 w-full max-w-sm">
-            <h3 class="text-lg font-black text-orange-500 uppercase mb-4" x-text="'Editar ' + editForm.diaSemana"></h3>
+    <!-- Modal Editor Manual Mejorado -->
+    <div x-show="ui.showEdit" x-cloak class="fixed inset-0 bg-black/95 z-[110] p-6 flex items-center justify-center overflow-y-auto">
+        <div class="bg-gray-900 border border-white/20 rounded-[2.5rem] p-8 w-full max-w-md">
+            <h3 class="text-2xl font-black text-orange-500 uppercase mb-6" x-text="editForm.diaSemana"></h3>
             
-            <div class="space-y-4">
+            <div class="space-y-6">
+                <!-- CAMPO FECHA (Nuevo) -->
                 <div>
-                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Nombre del Turno / Servicio</label>
-                    <input type="text" x-model="editForm.servicio" placeholder="Ej: Bintaufa, Mañanas..." class="input-manual uppercase font-black"/>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Entrada</label>
-                        <input type="time" x-model="editForm.entrada" class="input-manual text-center font-bold"/>
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Salida</label>
-                        <input type="time" x-model="editForm.salida" class="input-manual text-center font-bold"/>
-                    </div>
+                    <label class="text-xs font-black text-gray-500 uppercase ml-2">Fecha del día</label>
+                    <input type="text" x-model="editForm.fecha" class="input-basha font-bold text-center" placeholder="Ej: 12/05/24"/>
                 </div>
 
                 <div>
-                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Nº Autobús</label>
-                    <input type="text" x-model="editForm.bus" placeholder="Ej: 56" class="input-manual text-center font-black text-orange-500 text-2xl"/>
+                    <label class="text-xs font-black text-gray-500 uppercase ml-2">Servicio / Línea</label>
+                    <input type="text" x-model="editForm.servicio" class="input-basha font-black text-orange-500 uppercase" placeholder="Ej: Bintaufa, Escolar..."/>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-black text-gray-500 uppercase ml-2">Entrada</label>
+                        <input type="time" x-model="editForm.entrada" class="input-basha text-center font-black text-xl"/>
+                    </div>
+                    <div>
+                        <label class="text-xs font-black text-gray-500 uppercase ml-2">Salida</label>
+                        <input type="time" x-model="editForm.salida" class="input-basha text-center font-black text-xl"/>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-black text-gray-500 uppercase ml-2">Nº Autobús (Coche)</label>
+                    <input type="text" x-model="editForm.bus" class="input-basha text-center font-black text-3xl text-orange-500" placeholder="Ej: 56"/>
                 </div>
             </div>
 
-            <div class="flex gap-3 mt-6">
-                <button @click="ui.showEdit = false" class="flex-1 bg-gray-800 py-4 rounded-xl font-bold">CERRAR</button>
-                <button @click="guardarCambios()" class="flex-1 bg-orange-600 py-4 rounded-xl font-black uppercase">GUARDAR</button>
+            <div class="grid grid-cols-2 gap-4 mt-8">
+                <button @click="ui.showEdit = false" class="bg-gray-800 text-white py-5 rounded-2xl font-bold uppercase">Cancelar</button>
+                <button @click="guardarCambios()" class="bg-orange-600 text-white py-5 rounded-2xl font-black text-lg uppercase shadow-lg shadow-orange-900/30">Guardar</button>
             </div>
         </div>
     </div>
@@ -174,19 +180,11 @@
                 inputRaw: '',
                 planning: [],
                 editIndex: null,
-                editForm: { diaSemana: '', servicio: '', entrada: '', salida: '', bus: '' },
+                editForm: { diaSemana: '', fecha: '', servicio: '', entrada: '', salida: '', bus: '' },
 
                 init() {
-                    const saved = localStorage.getItem('basha_v4');
+                    const saved = localStorage.getItem('basha_pro_v5');
                     if (saved) this.planning = JSON.parse(saved);
-                },
-
-                crearSemanaVacia() {
-                    const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-                    this.planning = dias.map(d => ({
-                        diaSemana: d, fecha: '--', servicio: 'SIN ASIGNAR', entrada: '', salida: '', bus: ''
-                    }));
-                    this.save();
                 },
 
                 getEstiloDia(dia) {
@@ -209,18 +207,21 @@
                     this.ui.showEdit = false;
                 },
 
-                procesarMail(texto) {
+                procesarSuperInteligente(texto) {
                     if (!texto.trim()) return;
-                    const diasSemana = ["LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO", "DOMINGO"];
-                    const fechas = texto.match(/\d{2}-\d{2}-\d{2}/g) || [];
+
+                    const diasNombres = ["LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO", "DOMINGO"];
                     
-                    // Separamos por líneas para analizar
+                    // Buscador de fechas más flexible: captura DD-MM-YY, DD/MM/YY, DD.MM.YYYY, etc.
+                    const regexFecha = /\b\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}\b/g;
+                    const fechasDetectadas = texto.match(regexFecha) || [];
+
                     const lineas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
                     
-                    let temporal = diasSemana.map((d, i) => ({
+                    let temporal = diasNombres.map((d, i) => ({
                         diaSemana: d,
-                        fecha: fechas[i] || '--',
-                        servicio: 'Día LIBRE', // Por defecto
+                        fecha: fechasDetectadas[i] || '--/--/--',
+                        servicio: 'Día LIBRE',
                         entrada: '',
                         salida: '',
                         bus: ''
@@ -231,32 +232,36 @@
                     lineas.forEach(linea => {
                         const lU = linea.toUpperCase();
                         
-                        // Detectar día
-                        diasSemana.forEach((d, idx) => {
+                        // 1. Cambiar de día si la línea menciona un día de la semana
+                        diasNombres.forEach((d, idx) => {
                             if (lU.includes(d)) diaActualIdx = idx;
                         });
 
                         if (diaActualIdx !== -1) {
-                            // Si la línea tiene contenido y no es solo el día de la semana
-                            if (linea.length > 5 && !diasSemana.includes(lU)) {
+                            // 2. Extraer horas (HH:MM)
+                            const horas = linea.match(/\b\d{2}:\d{2}\b/g);
+                            if (horas) {
+                                temporal[diaActualIdx].entrada = horas[0];
+                                if (horas[1]) temporal[diaActualIdx].salida = horas[1];
+                            }
+
+                            // 3. Extraer Bus (número de 2 o 3 cifras, excluyendo las horas encontradas)
+                            const busMatch = linea.match(/(?<![:\d])\b(56|67|76|86|10|15|20|101|102|80|90)\b(?![%:\d])/);
+                            if (busMatch && !temporal[diaActualIdx].bus) {
+                                temporal[diaActualIdx].bus = busMatch[0];
+                            }
+
+                            // 4. Extraer Servicio (Si la línea tiene más de 5 caracteres y no es solo la fecha)
+                            if (linea.length > 6 && !linea.match(regexFecha) && !diasNombres.includes(lU)) {
+                                // Limpiar la línea de horas y números de bus para dejar solo el nombre del servicio
+                                let nombreLimpio = linea
+                                    .replace(/\b\d{2}:\d{2}\b/g, '')
+                                    .replace(/(?<![:\d])\b(56|67|76|86|10|15|20|101|102)\b(?![%:\d])/g, '')
+                                    .replace(/[\-\|]/g, '')
+                                    .trim();
                                 
-                                // 1. Buscar Horas (07:00)
-                                const horas = linea.match(/\b\d{2}:\d{2}\b/g);
-                                if (horas) {
-                                    temporal[diaActualIdx].entrada = horas[0];
-                                    if (horas[1]) temporal[diaActualIdx].salida = horas[1];
-                                }
-
-                                // 2. Buscar Autobús (números de 2 o 3 cifras que no sean horas)
-                                const busMatch = linea.match(/(?<![:\d])\b(56|67|76|86|10|15|20|101|102)\b(?![%:\d])/);
-                                if (busMatch) temporal[diaActualIdx].bus = busMatch[0];
-
-                                // 3. EL NOMBRE DEL TURNO:
-                                // Si no es un día libre, guardamos la línea como nombre de servicio
-                                if (!lU.includes('LIBRE') && !lU.includes('DESCANS')) {
-                                    // Limpiamos un poco la línea para que no sea gigante
-                                    let limpio = linea.replace(/\d{2}:\d{2}/g, '').replace(/\b\d{2,3}\b/g, '').replace(/-/g, '').trim();
-                                    if (limpio.length > 2) temporal[diaActualIdx].servicio = limpio;
+                                if (nombreLimpio.length > 3 && !lU.includes('LIBRE') && !lU.includes('DESCANS')) {
+                                    temporal[diaActualIdx].servicio = nombreLimpio;
                                 }
                             }
                         }
@@ -265,16 +270,17 @@
                     this.planning = temporal;
                     this.save();
                     this.ui.showImport = false;
+                    this.inputRaw = '';
                 },
 
                 save() {
-                    localStorage.setItem('basha_v4', JSON.stringify(this.planning));
+                    localStorage.setItem('basha_pro_v5', JSON.stringify(this.planning));
                 },
 
                 borrarTodo() {
-                    if (confirm('¿Limpiar toda la pantalla?')) {
+                    if (confirm('¿Quieres limpiar toda la pantalla?')) {
                         this.planning = [];
-                        localStorage.removeItem('basha_v4');
+                        localStorage.removeItem('basha_pro_v5');
                     }
                 }
             }
