@@ -2,8 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
-    <title>BashaDrive Pro V8</title>
+    <!-- El "shrink-to-fit=no" es la clave para que no se vea disminuida -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no"/>
+    <title>BashaDrive Pro</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,108 +15,142 @@
 
     <style>
         [x-cloak] { display: none !important; }
-        body { 
-            background-color: #000; 
-            color: #fff; 
-            font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
-            padding-top: env(safe-area-inset-top);
+        
+        /* Reset total para evitar que el móvil se aleje o encoja la app */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden; /* Evita scrolls extraños que causan el encogimiento */
         }
+
+        body { 
+            color: #fff; 
+            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.4;
+        }
+
+        .header-safe {
+            padding-top: env(safe-area-inset-top);
+            background: #000;
+        }
+
         .card-dia {
-            background: linear-gradient(145deg, #111827, #0a0f1a);
-            border-radius: 1rem;
-            margin-bottom: 0.6rem;
-            padding: 1rem;
+            background: #111827;
+            border-radius: 1.25rem;
+            margin-bottom: 0.75rem;
+            padding: 1.1rem;
             border-left: 10px solid #374151;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
-        /* Colores vivos para identificar el turno */
+
+        /* Colores vivos */
         .border-expres { border-left-color: #0ea5e9; }  
         .border-escolar { border-left-color: #10b981; } 
         .border-tarde { border-left-color: #f59e0b; }   
-        .border-libre { border-left-color: #4b5563; opacity: 0.6; }
+        .border-libre { border-left-color: #4b5563; opacity: 0.7; }
 
         .bus-badge {
             background: #f97316;
             color: #000;
-            padding: 4px 10px;
+            padding: 4px 12px;
             border-radius: 0.75rem;
             font-weight: 900;
-            font-size: 1.6rem; /* Tamaño intermedio perfecto */
+            font-size: 1.6rem;
             line-height: 1;
-            box-shadow: 0 4px 0 #c2410c;
         }
+
         .texto-servicio {
-            font-size: 1.1rem; 
+            font-size: 1.1rem;
             font-weight: 800;
-            line-height: 1.2;
             text-transform: uppercase;
         }
+
         .texto-fecha {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: #94a3b8;
-            font-weight: 800;
+            font-weight: bold;
+        }
+
+        /* Scroll suave para los días */
+        .scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            padding-bottom: 100px; /* Espacio para el final */
+            -webkit-overflow-scrolling: touch;
         }
     </style>
 </head>
 <body x-data="bashaApp()" x-init="init()">
 
-    <!-- Header con X y Pegar -->
-    <header class="p-4 sticky top-0 bg-black/95 backdrop-blur-md z-50 flex justify-between items-center border-b border-white/10">
-        <div>
-            <h1 class="text-lg font-black text-white italic tracking-tighter">BASHADRIVE <span class="text-orange-500">PRO</span></h1>
-            <p class="text-[9px] font-bold text-sky-400 uppercase tracking-widest">Cód. 86 • Menorca</p>
-        </div>
-        <div class="flex gap-3">
-            <!-- Botón X para limpiar -->
-            <button @click="borrarTodo()" class="text-red-500 border border-red-500/30 p-2 rounded-lg active:bg-red-500/20">
-                <span class="material-symbols-outlined text-2xl">delete_forever</span>
-            </button>
-            <!-- Botón Pegar -->
-            <button @click="ui.showImport = true" class="bg-orange-600 text-white px-4 py-2 rounded-xl font-black text-xs uppercase shadow-lg">
-                PEGAR
-            </button>
-        </div>
-    </header>
+    <div class="header-safe border-b border-white/10">
+        <header class="p-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-orange-600 p-1.5 rounded-lg">
+                    <span class="material-symbols-outlined text-black text-2xl">steering_wheel</span>
+                </div>
+                <div>
+                    <h1 class="text-lg font-black italic leading-none">BASHADRIVE <span class="text-orange-500">PRO</span></h1>
+                    <p class="text-[9px] font-bold text-sky-400 uppercase tracking-widest mt-0.5">Menorca • Cód. 86</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <!-- Botón X Limpiar -->
+                <button @click="borrarTodo()" class="text-red-500 bg-red-500/10 w-10 h-10 rounded-xl flex items-center justify-center">
+                    <span class="material-symbols-outlined">delete_forever</span>
+                </button>
+                <!-- Botón Pegar -->
+                <button @click="ui.showImport = true" class="bg-orange-600 text-white px-4 py-2 rounded-xl font-black text-xs uppercase">
+                    PEGAR
+                </button>
+            </div>
+        </header>
+    </div>
 
-    <main class="p-2">
+    <main class="scroll-area">
         <template x-if="planning.length === 0">
-            <div class="text-center py-20 opacity-20 border-2 border-dashed border-white/10 rounded-3xl m-4">
-                <span class="material-symbols-outlined text-6xl mb-2">tab_unselected</span>
-                <p class="text-xs font-bold uppercase">Copia el mail y dale a PEGAR</p>
+            <div class="text-center py-20 opacity-20 border-2 border-dashed border-white/10 rounded-[2rem]">
+                <span class="material-symbols-outlined text-5xl mb-2">library_add</span>
+                <p class="text-sm font-bold uppercase">Copia el mail y dale a PEGAR</p>
             </div>
         </template>
 
         <template x-for="(dia, index) in planning" :key="index">
             <div class="card-dia" :class="getEstiloDia(dia)">
                 
-                <!-- Columna Datos -->
-                <div class="flex-grow pr-2">
+                <div class="flex-grow pr-3">
                     <div class="flex items-center gap-2 mb-1">
-                        <span class="text-orange-500 font-black text-[10px] uppercase" x-text="dia.diaSemana"></span>
+                        <span class="text-orange-500 font-black text-xs" x-text="dia.diaSemana"></span>
                         <span class="texto-fecha" x-text="dia.fecha"></span>
                     </div>
-                    <h2 class="texto-servicio text-white" x-text="dia.servicio"></h2>
-                    <!-- Horarios -->
-                    <div class="flex gap-4 mt-1.5">
-                        <div class="flex items-center gap-1 text-sky-400">
+                    <h2 class="texto-servicio" x-text="dia.servicio"></h2>
+                    <div class="flex gap-4 mt-2">
+                        <div class="flex items-center gap-1 text-sky-400 font-bold text-sm">
                             <span class="material-symbols-outlined text-xs">login</span>
-                            <span class="text-sm font-bold" x-text="dia.entrada || '--:--'"></span>
+                            <span x-text="dia.entrada || '--:--'"></span>
                         </div>
-                        <div class="flex items-center gap-1 text-orange-400">
+                        <div class="flex items-center gap-1 text-orange-400 font-bold text-sm">
                             <span class="material-symbols-outlined text-xs">logout</span>
-                            <span class="text-sm font-bold" x-text="dia.salida || '--:--'"></span>
+                            <span x-text="dia.salida || '--:--'"></span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Columna Bus y Edición -->
-                <div class="flex flex-col items-end gap-3 flex-shrink-0">
+                <div class="flex flex-col items-end gap-3">
                     <template x-if="dia.bus">
                         <div class="bus-badge" x-text="dia.bus"></div>
                     </template>
-                    <button @click="abrirEditor(index)" class="text-gray-500 bg-white/5 p-2 rounded-lg active:text-orange-500">
+                    <button @click="abrirEditor(index)" class="text-gray-500 bg-white/5 p-2 rounded-lg active:bg-white/10">
                         <span class="material-symbols-outlined text-xl">edit</span>
                     </button>
                 </div>
@@ -123,45 +158,31 @@
         </template>
     </main>
 
-    <!-- Modal Pegar (Importar) -->
+    <!-- Modal Pegar -->
     <div x-show="ui.showImport" x-cloak class="fixed inset-0 bg-black z-[100] p-6 flex flex-col">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-black text-orange-500 italic">PEGAR CUADRANTE</h2>
+        <div class="flex justify-between items-center mb-6 pt-4">
+            <h2 class="text-xl font-black text-orange-500">PEGAR CUADRANTE</h2>
             <button @click="ui.showImport = false" class="text-white bg-white/10 p-2 rounded-full"><span class="material-symbols-outlined">close</span></button>
         </div>
         <textarea x-model="inputRaw" class="flex-grow bg-gray-900 border-2 border-white/10 rounded-2xl p-4 text-sky-400 font-mono text-sm outline-none" placeholder="Pega aquí el contenido del mail..."></textarea>
-        <button @click="procesarVerticalReal(inputRaw)" class="mt-4 bg-orange-600 text-white py-5 rounded-2xl font-black text-lg uppercase shadow-2xl">
+        <button @click="procesarVertical(inputRaw)" class="mt-4 bg-orange-600 text-white py-5 rounded-2xl font-black text-lg uppercase">
             GENERAR CUADRANTE
         </button>
     </div>
 
-    <!-- Modal Editor Manual -->
+    <!-- Modal Editor -->
     <div x-show="ui.showEdit" x-cloak class="fixed inset-0 bg-black/95 z-[110] p-6 flex items-center justify-center">
         <div class="bg-gray-900 border border-white/20 rounded-[2rem] p-6 w-full max-w-sm">
             <h3 class="text-lg font-black text-orange-500 uppercase mb-4" x-text="'EDITAR ' + editForm.diaSemana"></h3>
-            
             <div class="space-y-4">
-                <div>
-                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Nombre del Servicio</label>
-                    <input type="text" x-model="editForm.servicio" class="w-full bg-black border border-white/10 rounded-xl p-3 text-white font-bold uppercase"/>
-                </div>
+                <input type="text" x-model="editForm.servicio" class="w-full bg-black border border-white/10 rounded-xl p-3 text-white font-bold uppercase" placeholder="Servicio"/>
                 <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Entrada</label>
-                        <input type="time" x-model="editForm.entrada" class="w-full bg-black border border-white/10 rounded-xl p-3 text-white font-bold text-center"/>
-                    </div>
-                    <div>
-                        <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Salida</label>
-                        <input type="time" x-model="editForm.salida" class="w-full bg-black border border-white/10 rounded-xl p-3 text-white font-bold text-center"/>
-                    </div>
+                    <input type="time" x-model="editForm.entrada" class="w-full bg-black border border-white/10 rounded-xl p-3 text-white font-bold text-center"/>
+                    <input type="time" x-model="editForm.salida" class="w-full bg-black border border-white/10 rounded-xl p-3 text-white font-bold text-center"/>
                 </div>
-                <div>
-                    <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Nº Autobús</label>
-                    <input type="text" x-model="editForm.bus" class="w-full bg-black border border-white/10 rounded-xl p-3 text-orange-500 font-black text-2xl text-center"/>
-                </div>
+                <input type="text" x-model="editForm.bus" class="w-full bg-black border border-white/10 rounded-xl p-3 text-orange-500 font-black text-2xl text-center" placeholder="Nº Bus"/>
                 <input type="text" x-model="editForm.fecha" class="w-full bg-transparent border-none text-center text-xs text-gray-500" placeholder="Fecha"/>
             </div>
-
             <div class="grid grid-cols-2 gap-3 mt-6">
                 <button @click="ui.showEdit = false" class="bg-gray-800 py-4 rounded-xl font-bold uppercase text-xs">Cerrar</button>
                 <button @click="guardarCambios()" class="bg-orange-600 py-4 rounded-xl font-black uppercase text-xs">Guardar</button>
@@ -179,7 +200,7 @@
                 editForm: { diaSemana: '', fecha: '', servicio: '', entrada: '', salida: '', bus: '' },
 
                 init() {
-                    const saved = localStorage.getItem('basha_v8_prod');
+                    const saved = localStorage.getItem('basha_v10');
                     if (saved) this.planning = JSON.parse(saved);
                 },
 
@@ -203,52 +224,40 @@
                     this.ui.showEdit = false;
                 },
 
-                procesarVerticalReal(texto) {
+                procesarVertical(texto) {
                     if (!texto.trim()) return;
-
                     const diasNombres = ["LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO", "DOMINGO"];
-                    
-                    // 1. EXTRAER TODOS LOS DATOS POR TIPO
                     const fechas = texto.match(/\b\d{1,2}[\/\-\.]\d{1,2}([\/\-\.]\d{2,4})?\b/g) || [];
                     const horas = texto.match(/\b\d{2}:\d{2}\b/g) || [];
                     const buses = texto.match(/(?<![:\d])\b(56|67|76|86|101|102|80|90|15|20|10|12)\b(?![%:\d])/g) || [];
                     
-                    // 2. EXTRAER LINEAS QUE PUEDEN SER SERVICIOS
-                    // Filtramos el texto para quitar fechas, días y horas, quedándonos con nombres
                     const lineas = texto.split('\n').map(l => l.trim()).filter(l => {
                         const u = l.toUpperCase();
-                        return l.length > 3 && 
-                               !diasNombres.includes(u) && 
-                               !l.match(/\b\d{2}:\d{2}\b/) &&
-                               !l.match(/\b\d{1,2}[\/\-\.]\d{1,2}/);
+                        return l.length > 3 && !diasNombres.includes(u) && !l.match(/\b\d{2}:\d{2}\b/) && !l.match(/\b\d{1,2}[\/\-\.]\d{1,2}/);
                     });
 
-                    // 3. CONSTRUCCIÓN DE LA SEMANA (LÓGICA VERTICAL)
-                    let temporal = diasNombres.map((d, i) => {
-                        return {
-                            diaSemana: d,
-                            fecha: fechas[i] || '--/--',
-                            servicio: lineas[i] || 'LIBRE', // El i-ésimo nombre de servicio
-                            entrada: horas[i * 2] || '',    // La i-ésima pareja de horas
-                            salida: horas[i * 2 + 1] || '',
-                            bus: buses[i] || ''             // El i-ésimo bus
-                        };
-                    });
+                    this.planning = diasNombres.map((d, i) => ({
+                        diaSemana: d,
+                        fecha: fechas[i] || '--/--',
+                        servicio: lineas[i] || 'LIBRE',
+                        entrada: horas[i * 2] || '',
+                        salida: horas[i * 2 + 1] || '',
+                        bus: buses[i] || ''
+                    }));
 
-                    this.planning = temporal;
                     this.save();
                     this.ui.showImport = false;
                     this.inputRaw = '';
                 },
 
                 save() {
-                    localStorage.setItem('basha_v8_prod', JSON.stringify(this.planning));
+                    localStorage.setItem('basha_v10', JSON.stringify(this.planning));
                 },
 
                 borrarTodo() {
                     if (confirm('¿Limpiar cuadrante?')) {
                         this.planning = [];
-                        localStorage.removeItem('basha_v8_prod');
+                        localStorage.removeItem('basha_v10');
                     }
                 }
             }
