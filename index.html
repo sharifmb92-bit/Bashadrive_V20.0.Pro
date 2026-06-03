@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
-    <title>BashaDrive Pro</title>
+    <title>BashaDrive Pro V5</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -19,13 +19,21 @@
             color: #ffffff; 
             font-family: system-ui, -apple-system, sans-serif;
             padding-top: env(safe-area-inset-top);
+            overflow-x: hidden;
         }
         .card-dia {
             background: linear-gradient(145deg, #111827, #0f172a);
-            border-radius: 1.5rem;
-            margin-bottom: 1rem;
-            padding: 1.25rem;
+            border-radius: 1.25rem;
+            margin-bottom: 0.75rem;
+            padding: 1rem 1.25rem;
             border-left: 10px solid #374151;
+            transition: all 0.3s ease;
+        }
+        /* Resaltado para el día actual */
+        .card-hoy {
+            border: 2px solid #f97316 !important;
+            border-left-width: 10px !important;
+            box-shadow: 0 0 15px rgba(249, 115, 22, 0.3);
         }
         .border-expres { border-left-color: #0ea5e9; }  
         .border-escolar { border-left-color: #10b981; } 
@@ -35,11 +43,12 @@
         .bus-badge {
             background: #f97316;
             color: #000000;
-            padding: 0.4rem 0.8rem;
+            padding: 0.3rem 0.7rem;
             border-radius: 0.75rem;
             font-weight: 900;
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             line-height: 1;
+            box-shadow: 0 3px 0 #c2410c;
         }
         .input-manual {
             background: #1f2937;
@@ -54,64 +63,62 @@
 </head>
 <body x-data="bashaApp()" x-init="init()">
 
-    <!-- Header con botón Borrar (X) e Importar -->
-    <header class="p-4 sticky top-0 bg-black/90 backdrop-blur-md z-50 flex justify-between items-center border-b border-white/10">
+    <header class="p-4 sticky top-0 bg-black/95 backdrop-blur-md z-50 flex justify-between items-center border-b border-white/10">
         <div>
-            <h1 class="text-lg font-black text-orange-500 italic">BASHADRIVE PRO</h1>
-            <p class="text-[10px] font-bold text-sky-400 uppercase tracking-widest">Cód. 86 • Menorca</p>
+            <h1 class="text-lg font-black text-orange-500 italic leading-none">BASHADRIVE <span class="text-white">PRO</span></h1>
+            <p class="text-[9px] font-bold text-sky-400 uppercase tracking-widest mt-1">Cód. 86 • Menorca</p>
         </div>
         <div class="flex gap-2">
-            <!-- Botón Limpiar Pantalla (X) -->
-            <button @click="borrarTodo()" class="bg-red-600/20 text-red-500 w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition">
+            <button @click="borrarTodo()" class="bg-red-600/10 text-red-500 w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition">
                 <span class="material-symbols-outlined">delete_sweep</span>
             </button>
-            <!-- Botón Añadir/Pegar -->
-            <button @click="ui.showImport = true" class="bg-orange-600 w-10 h-10 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition">
-                <span class="material-symbols-outlined text-white">add_task</span>
+            <button @click="ui.showImport = true" class="bg-orange-600 w-10 h-10 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition text-white">
+                <span class="material-symbols-outlined">add_task</span>
             </button>
         </div>
     </header>
 
-    <main class="p-4 pb-20">
-        <!-- Mensaje si está vacío -->
+    <main class="p-3 pb-24">
         <template x-if="planning.length === 0">
-            <div class="flex flex-col items-center justify-center py-20 text-center">
-                <span class="material-symbols-outlined text-6xl text-gray-700 mb-4">calendar_view_day</span>
-                <p class="text-gray-500 font-bold uppercase text-xs tracking-widest">Pantalla Limpia</p>
-                <button @click="crearSemanaVacia()" class="mt-4 text-orange-500 font-black text-sm underline">O CREAR SEMANA MANUALMENTE</button>
+            <div class="flex flex-col items-center justify-center py-20 text-center opacity-30">
+                <span class="material-symbols-outlined text-6xl mb-4">calendar_view_day</span>
+                <p class="font-bold uppercase text-xs tracking-widest">Pantalla Limpia</p>
             </div>
         </template>
 
-        <!-- Listado de Días -->
         <template x-for="(dia, index) in planning" :key="index">
-            <div class="card-dia" :class="getEstiloDia(dia)">
-                <div class="flex justify-between items-start mb-3">
+            <div class="card-dia" :class="[getEstiloDia(dia), esHoy(dia.fecha) ? 'card-hoy' : '']">
+                <div class="flex justify-between items-start mb-2">
                     <div>
-                        <h3 class="text-orange-500 font-black uppercase text-xs" x-text="dia.diaSemana"></h3>
-                        <p class="text-gray-400 font-bold text-sm" x-text="dia.fecha"></p>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-orange-500 font-black uppercase text-xs" x-text="dia.diaSemana"></h3>
+                            <template x-if="esHoy(dia.fecha)">
+                                <span class="bg-orange-600 text-[8px] px-1.5 py-0.5 rounded font-black text-white uppercase">Hoy</span>
+                            </template>
+                        </div>
+                        <p class="text-gray-400 font-bold text-sm tracking-tighter" x-text="dia.fecha"></p>
                     </div>
-                    <!-- Botón Lápiz para escribir a mano -->
-                    <button @click="abrirEditor(index)" class="bg-white/5 p-2 rounded-lg text-gray-400 active:text-orange-500">
-                        <span class="material-symbols-outlined">edit_note</span>
+                    <button @click="abrirEditor(index)" class="bg-white/5 p-2 rounded-lg text-gray-500">
+                        <span class="material-symbols-outlined text-xl">edit_note</span>
                     </button>
                 </div>
 
                 <div class="flex items-center justify-between gap-3">
                     <div class="flex-1">
-                        <h2 class="text-xl font-black text-white uppercase leading-tight" x-text="dia.servicio"></h2>
-                        <div class="flex gap-4 mt-2">
-                            <div class="flex items-center gap-1">
+                        <h2 class="text-xl font-black text-white uppercase leading-tight tracking-tight" x-text="dia.servicio"></h2>
+                        <div class="flex gap-4 mt-1.5">
+                            <div class="flex items-center gap-1.5">
                                 <span class="material-symbols-outlined text-sky-400 text-sm">login</span>
                                 <span class="font-bold text-base" x-text="dia.entrada || '--:--'"></span>
                             </div>
-                            <div class="flex items-center gap-1">
+                            <div class="flex items-center gap-1.5">
                                 <span class="material-symbols-outlined text-orange-400 text-sm">logout</span>
                                 <span class="font-bold text-base" x-text="dia.salida || '--:--'"></span>
                             </div>
                         </div>
                     </div>
                     <template x-if="dia.bus">
-                        <div class="text-center">
+                        <div class="flex-shrink-0">
                             <span class="bus-badge" x-text="dia.bus"></span>
                         </div>
                     </template>
@@ -120,49 +127,43 @@
         </template>
     </main>
 
-    <!-- Pantalla Importar (Pegar) -->
+    <!-- Pantalla Importar -->
     <div x-show="ui.showImport" x-cloak class="fixed inset-0 bg-black z-[100] p-6 flex flex-col">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-black text-orange-500 uppercase">Pegar Cuadrante</h2>
+        <div class="flex justify-between items-center mb-6 pt-4">
+            <h2 class="text-xl font-black text-orange-500 uppercase italic">Pegar Mail</h2>
             <button @click="ui.showImport = false" class="text-white"><span class="material-symbols-outlined">close</span></button>
         </div>
-        <textarea x-model="inputRaw" class="flex-grow bg-gray-900 border-2 border-white/10 rounded-2xl p-4 text-sky-400 font-mono text-base outline-none" placeholder="Pega aquí el mail..."></textarea>
-        <button @click="procesarMail(inputRaw)" class="mt-4 bg-orange-600 text-white py-5 rounded-2xl font-black text-lg uppercase shadow-lg">
-            GENERAR CUADRANTE
-        </button>
+        <textarea x-model="inputRaw" class="flex-grow bg-gray-900 border-2 border-white/10 rounded-2xl p-4 text-sky-400 font-mono text-sm outline-none" placeholder="Pega el cuadrante aquí..."></textarea>
+        <button @click="procesarMail(inputRaw)" class="mt-4 bg-orange-600 text-white py-5 rounded-2xl font-black text-lg uppercase shadow-lg"> GENERAR MI SEMANA </button>
     </div>
 
-    <!-- Pantalla Editar (Escribir a mano) -->
+    <!-- Pantalla Editar -->
     <div x-show="ui.showEdit" x-cloak class="fixed inset-0 bg-black/95 z-[110] p-6 flex items-center justify-center">
         <div class="bg-gray-900 border border-white/20 rounded-[2rem] p-6 w-full max-w-sm">
-            <h3 class="text-lg font-black text-orange-500 uppercase mb-4" x-text="'Editar ' + editForm.diaSemana"></h3>
+            <h3 class="text-lg font-black text-orange-500 uppercase mb-4" x-text="'Ajustar ' + editForm.diaSemana"></h3>
             
             <div class="space-y-4">
                 <div>
-                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Nombre del Turno / Servicio</label>
-                    <input type="text" x-model="editForm.servicio" placeholder="Ej: Bintaufa, Mañanas..." class="input-manual uppercase font-black"/>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Fecha</label>
+                    <input type="text" x-model="editForm.fecha" class="input-manual font-bold" placeholder="03/06/26"/>
                 </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Entrada</label>
-                        <input type="time" x-model="editForm.entrada" class="input-manual text-center font-bold"/>
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Salida</label>
-                        <input type="time" x-model="editForm.salida" class="input-manual text-center font-bold"/>
-                    </div>
-                </div>
-
                 <div>
-                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Nº Autobús</label>
-                    <input type="text" x-model="editForm.bus" placeholder="Ej: 56" class="input-manual text-center font-black text-orange-500 text-2xl"/>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Servicio</label>
+                    <input type="text" x-model="editForm.servicio" class="input-manual uppercase font-black" placeholder="Ej: Bintaufa..."/>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="time" x-model="editForm.entrada" class="input-manual text-center font-bold"/>
+                    <input type="time" x-model="editForm.salida" class="input-manual text-center font-bold"/>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-1">Nº Bus</label>
+                    <input type="text" x-model="editForm.bus" class="input-manual text-center font-black text-orange-500 text-2xl"/>
                 </div>
             </div>
 
             <div class="flex gap-3 mt-6">
-                <button @click="ui.showEdit = false" class="flex-1 bg-gray-800 py-4 rounded-xl font-bold">CERRAR</button>
-                <button @click="guardarCambios()" class="flex-1 bg-orange-600 py-4 rounded-xl font-black uppercase">GUARDAR</button>
+                <button @click="ui.showEdit = false" class="flex-1 bg-gray-800 py-4 rounded-xl font-bold uppercase text-xs">Cerrar</button>
+                <button @click="guardarCambios()" class="flex-1 bg-orange-600 py-4 rounded-xl font-black uppercase text-xs">Guardar</button>
             </div>
         </div>
     </div>
@@ -174,19 +175,24 @@
                 inputRaw: '',
                 planning: [],
                 editIndex: null,
-                editForm: { diaSemana: '', servicio: '', entrada: '', salida: '', bus: '' },
+                editForm: { diaSemana: '', fecha: '', servicio: '', entrada: '', salida: '', bus: '' },
 
                 init() {
-                    const saved = localStorage.getItem('basha_v4');
+                    const saved = localStorage.getItem('basha_v5_data');
                     if (saved) this.planning = JSON.parse(saved);
                 },
 
-                crearSemanaVacia() {
-                    const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-                    this.planning = dias.map(d => ({
-                        diaSemana: d, fecha: '--', servicio: 'SIN ASIGNAR', entrada: '', salida: '', bus: ''
-                    }));
-                    this.save();
+                esHoy(fechaStr) {
+                    if (!fechaStr || fechaStr === '--') return false;
+                    const hoy = new Date();
+                    const d = String(hoy.getDate()).padStart(2, '0');
+                    const m = String(hoy.getMonth() + 1).padStart(2, '0');
+                    const y = String(hoy.getFullYear()).slice(-2);
+                    
+                    // Limpiar la fecha de entrada (quitar barras, puntos o guiones)
+                    const cleanFecha = fechaStr.replace(/[\/\-\.]/g, '');
+                    const cleanHoy = d + m + y;
+                    return cleanFecha === cleanHoy;
                 },
 
                 getEstiloDia(dia) {
@@ -212,52 +218,42 @@
                 procesarMail(texto) {
                     if (!texto.trim()) return;
                     const diasSemana = ["LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO", "DOMINGO"];
-                    const fechas = texto.match(/\d{2}-\d{2}-\d{2}/g) || [];
                     
-                    // Separamos por líneas para analizar
+                    // Detector de fechas mejorado (03/06/26, 03-06-26, 03.06.26)
+                    const regexFecha = /\b\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}\b/g;
+                    const fechas = texto.match(regexFecha) || [];
+                    
                     const lineas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-                    
                     let temporal = diasSemana.map((d, i) => ({
                         diaSemana: d,
                         fecha: fechas[i] || '--',
-                        servicio: 'Día LIBRE', // Por defecto
+                        servicio: 'SIN ASIGNAR',
                         entrada: '',
                         salida: '',
                         bus: ''
                     }));
 
                     let diaActualIdx = -1;
-
                     lineas.forEach(linea => {
                         const lU = linea.toUpperCase();
-                        
-                        // Detectar día
                         diasSemana.forEach((d, idx) => {
                             if (lU.includes(d)) diaActualIdx = idx;
                         });
 
-                        if (diaActualIdx !== -1) {
-                            // Si la línea tiene contenido y no es solo el día de la semana
-                            if (linea.length > 5 && !diasSemana.includes(lU)) {
-                                
-                                // 1. Buscar Horas (07:00)
-                                const horas = linea.match(/\b\d{2}:\d{2}\b/g);
-                                if (horas) {
-                                    temporal[diaActualIdx].entrada = horas[0];
-                                    if (horas[1]) temporal[diaActualIdx].salida = horas[1];
-                                }
+                        if (diaActualIdx !== -1 && linea.length > 5 && !diasSemana.includes(lU)) {
+                            const horas = linea.match(/\b\d{2}:\d{2}\b/g);
+                            if (horas) {
+                                temporal[diaActualIdx].entrada = horas[0];
+                                if (horas[1]) temporal[diaActualIdx].salida = horas[1];
+                            }
+                            const busMatch = linea.match(/(?<![:\d])\b(56|67|76|86|10|15|20|101|102)\b(?![%:\d])/);
+                            if (busMatch) temporal[diaActualIdx].bus = busMatch[0];
 
-                                // 2. Buscar Autobús (números de 2 o 3 cifras que no sean horas)
-                                const busMatch = linea.match(/(?<![:\d])\b(56|67|76|86|10|15|20|101|102)\b(?![%:\d])/);
-                                if (busMatch) temporal[diaActualIdx].bus = busMatch[0];
-
-                                // 3. EL NOMBRE DEL TURNO:
-                                // Si no es un día libre, guardamos la línea como nombre de servicio
-                                if (!lU.includes('LIBRE') && !lU.includes('DESCANS')) {
-                                    // Limpiamos un poco la línea para que no sea gigante
-                                    let limpio = linea.replace(/\d{2}:\d{2}/g, '').replace(/\b\d{2,3}\b/g, '').replace(/-/g, '').trim();
-                                    if (limpio.length > 2) temporal[diaActualIdx].servicio = limpio;
-                                }
+                            if (!lU.includes('LIBRE') && !lU.includes('DESCANS')) {
+                                let limpio = linea.replace(regexFecha, '').replace(/\b\d{2}:\d{2}\b/g, '').replace(/\b\d{2,3}\b/g, '').replace(/-/g, '').trim();
+                                if (limpio.length > 2) temporal[diaActualIdx].servicio = limpio;
+                            } else {
+                                temporal[diaActualIdx].servicio = "Día LIBRE";
                             }
                         }
                     });
@@ -268,13 +264,13 @@
                 },
 
                 save() {
-                    localStorage.setItem('basha_v4', JSON.stringify(this.planning));
+                    localStorage.setItem('basha_v5_data', JSON.stringify(this.planning));
                 },
 
                 borrarTodo() {
-                    if (confirm('¿Limpiar toda la pantalla?')) {
+                    if (confirm('¿Limpiar todo el cuadrante?')) {
                         this.planning = [];
-                        localStorage.removeItem('basha_v4');
+                        localStorage.removeItem('basha_v5_data');
                     }
                 }
             }
