@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
-    <title>BashaDrive Pro V6</title>
+    <title>BashaDrive Pro V7</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -27,11 +27,10 @@
             padding: 0.85rem 1.1rem;
             border-left: 8px solid #374151;
         }
-        /* Resaltado Hoy */
         .card-hoy {
             border: 1px solid #f97316 !important;
             border-left-width: 8px !important;
-            box-shadow: 0 0 12px rgba(249, 115, 22, 0.2);
+            box-shadow: 0 0 10px rgba(249, 115, 22, 0.2);
         }
         .border-expres { border-left-color: #0ea5e9; }  
         .border-escolar { border-left-color: #10b981; } 
@@ -44,7 +43,7 @@
             padding: 0.25rem 0.6rem;
             border-radius: 0.6rem;
             font-weight: 900;
-            font-size: 1.3rem; /* Tamaño Bus ajustado */
+            font-size: 1.3rem;
             line-height: 1;
         }
         .input-manual {
@@ -54,7 +53,7 @@
             padding: 0.6rem;
             color: white;
             width: 100%;
-            font-size: 1rem; /* Letras de registro más pequeñas */
+            font-size: 1rem;
         }
     </style>
 </head>
@@ -64,7 +63,7 @@
     <header class="p-4 sticky top-0 bg-black/95 backdrop-blur-md z-50 flex justify-between items-center border-b border-white/10">
         <div>
             <h1 class="text-base font-black text-orange-500 italic leading-none">BASHADRIVE <span class="text-white">PRO</span></h1>
-            <p class="text-[9px] font-bold text-sky-400 uppercase tracking-widest">Menorca • V6</p>
+            <p class="text-[9px] font-bold text-sky-400 uppercase tracking-widest">Menorca • V7</p>
         </div>
         <div class="flex gap-2">
             <button @click="borrarTodo()" class="text-red-500 bg-red-500/10 w-9 h-9 rounded-full flex items-center justify-center">
@@ -131,11 +130,21 @@
         <div class="bg-gray-900 border border-white/20 rounded-2xl p-5 w-full max-w-sm">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-sm font-black text-orange-500 uppercase" x-text="editForm.diaSemana"></h3>
-                <button @click="editForm.servicio = 'Día LIBRE'; editForm.bus = ''; editForm.entrada=''; editForm.salida=''" class="bg-gray-700 text-[10px] px-3 py-1 rounded-full font-black text-white uppercase">Marcar LIBRE</button>
+                <button @click="editForm.servicio = 'Día LIBRE'; editForm.bus = ''; editForm.entrada=''; editForm.salida=''" class="bg-gray-700 text-[10px] px-3 py-1 rounded-full font-black text-white uppercase">LIBRE</button>
             </div>
             
             <div class="space-y-3">
-                <input type="text" x-model="editForm.fecha" class="input-manual font-bold text-center" placeholder="Fecha (03/06/26)"/>
+                <div class="flex gap-2 items-end">
+                    <div class="flex-1">
+                        <label class="text-[9px] font-bold text-gray-500 uppercase ml-1">Fecha</label>
+                        <input type="text" x-model="editForm.fecha" class="input-manual font-bold text-center" placeholder="03/06/26"/>
+                    </div>
+                    <!-- Botón Varita Mágica para autocompletar fechas -->
+                    <button @click="magiaFechas()" class="bg-sky-600 p-2 rounded-lg text-white" title="Autocompletar resto de semana">
+                        <span class="material-symbols-outlined text-sm">auto_fix_high</span>
+                    </button>
+                </div>
+
                 <input type="text" x-model="editForm.servicio" class="input-manual uppercase font-black" placeholder="Servicio/Turno"/>
                 <div class="grid grid-cols-2 gap-2">
                     <input type="time" x-model="editForm.entrada" class="input-manual text-center"/>
@@ -161,7 +170,7 @@
                 editForm: { diaSemana: '', fecha: '', servicio: '', entrada: '', salida: '', bus: '' },
 
                 init() {
-                    const saved = localStorage.getItem('basha_v6_data');
+                    const saved = localStorage.getItem('basha_v7_data');
                     if (saved) {
                         this.planning = JSON.parse(saved);
                     } else {
@@ -206,6 +215,33 @@
                     this.ui.showEdit = false;
                 },
 
+                // MAGIA: Calcula el resto de las fechas a partir de la seleccionada
+                magiaFechas() {
+                    let parts = this.editForm.fecha.split(/[\/\-\.]/);
+                    if (parts.length < 3) return alert("Escribe la fecha completa: DD/MM/AA");
+
+                    let dia = parseInt(parts[0]);
+                    let mes = parseInt(parts[1]) - 1;
+                    let anio = parseInt(parts[2]);
+                    if (anio < 100) anio += 2000;
+
+                    let fechaBase = new Date(anio, mes, dia);
+                    
+                    // Rellenar desde el día editado hacia adelante
+                    for (let i = 0; i < this.planning.length; i++) {
+                        let nuevaFecha = new Date(fechaBase);
+                        nuevaFecha.setDate(fechaBase.getDate() + (i - this.editIndex));
+                        
+                        let d = String(nuevaFecha.getDate()).padStart(2, '0');
+                        let m = String(nuevaFecha.getMonth() + 1).padStart(2, '0');
+                        let a = String(nuevaFecha.getFullYear()).slice(-2);
+                        
+                        this.planning[i].fecha = `${d}/${m}/${a}`;
+                    }
+                    this.editForm.fecha = this.planning[this.editIndex].fecha;
+                    alert("¡Fechas de la semana actualizadas!");
+                },
+
                 procesarMail(texto) {
                     if (!texto.trim()) return;
                     const diasSemana = ["LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO", "DOMINGO"];
@@ -213,7 +249,7 @@
                     const fechas = texto.match(regexFecha) || [];
                     const lineas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
                     
-                    this.crearSemanaVacia(); // Resetear antes de procesar
+                    this.crearSemanaVacia();
 
                     let diaActualIdx = -1;
                     lineas.forEach(linea => {
@@ -223,7 +259,8 @@
                         });
 
                         if (diaActualIdx !== -1 && linea.length > 5 && !diasSemana.includes(lU)) {
-                            this.planning[diaActualIdx].fecha = fechas[diaActualIdx] || '--';
+                            // Asignar fecha encontrada o mantener la anterior
+                            if (fechas[diaActualIdx]) this.planning[diaActualIdx].fecha = fechas[diaActualIdx];
                             
                             const horas = linea.match(/\b\d{2}:\d{2}\b/g);
                             if (horas) {
@@ -234,7 +271,6 @@
                             const busMatch = linea.match(/(?<![:\d])\b(56|67|76|86|10|15|20|101|102)\b(?![%:\d])/);
                             if (busMatch) this.planning[diaActualIdx].bus = busMatch[0];
 
-                            // Solo pone LIBRE si la palabra está explícitamente en el texto
                             if (lU.includes('LIBRE') || lU.includes('DESCANS')) {
                                 this.planning[diaActualIdx].servicio = "Día LIBRE";
                             } else {
@@ -249,13 +285,13 @@
                 },
 
                 save() {
-                    localStorage.setItem('basha_v6_data', JSON.stringify(this.planning));
+                    localStorage.setItem('basha_v7_data', JSON.stringify(this.planning));
                 },
 
                 borrarTodo() {
                     if (confirm('¿Limpiar cuadrante?')) {
                         this.crearSemanaVacia();
-                        localStorage.removeItem('basha_v6_data');
+                        localStorage.removeItem('basha_v7_data');
                     }
                 }
             }
